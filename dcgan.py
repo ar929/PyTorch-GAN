@@ -13,7 +13,7 @@ import torchvision.datasets as dset
 import torchvision.transforms as transforms
 import torchvision.utils as vutils
 from torch.autograd import Variable
-from neural_net import Generator, Discriminator
+from .neural_net import Generator, Discriminator
 
 BATCH_SIZE = 64
 IMAGE_SIZE = 64  # img size will be 64x64
@@ -27,7 +27,12 @@ def load_logging_config():
     if not os.path.exists('log'):
         os.makedirs('log')
     try:
-        with open('logging_config.json', 'r', encoding='utf-8') as config:
+        if __name__ == "__main__":
+            config_path = 'logging_config.json'
+        else:
+            config_path = 'al_PyTorch_GAN/logging_config.json'
+            
+        with open(config_path, 'r', encoding='utf-8') as config:
             logging.config.dictConfig(json.load(config))
     except FileNotFoundError as e:
         logging.basicConfig(filename='./log/error.log',
@@ -61,7 +66,7 @@ def load_dataset(filepath='./data'):
     :return: Images organized in mini batches
     """
     transformer = transforms.Compose([
-        transforms.Scale(IMAGE_SIZE),
+        transforms.Resize(IMAGE_SIZE),
         transforms.ToTensor(),
         transforms.Normalize((.5, .5, .5), (.5, .5, .5))
     ])
@@ -129,7 +134,7 @@ def save_images(imgs, name, epoch):
     vutils.save_image(imgs, img_path, normalize=True)
 
 
-def train(args, dataloader):
+def train(args, dataloader, EPOCH_SIZE=25):
     """Trains Generator Neural Network and Discriminiator Neural Network
     :param dataloader: DataLoader object with images
     """
